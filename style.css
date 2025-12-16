@@ -1,0 +1,273 @@
+:root{
+  /* BX Media Core */
+  --bg:#0b0b0b;
+  --card:#141414;
+  --card2:#101010;
+  --border:#262626;
+
+  --text:#f2f2f2;
+  --muted:#9a9a9a;
+
+  /* BX Media Orange (logo matched) */
+  --accent:#ff7a00;
+  --accent-soft:#ff9a3c;
+}
+
+/* RESET */
+*{ box-sizing:border-box; }
+html,body{ height:100%; }
+
+/* PAGE / BACKGROUND */
+body{
+  margin:0;
+  font-family:"Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color:var(--text);
+
+  /* Unified background: even charcoal base with soft vignette + brand glow */
+  background-color:#0a0a0a;
+  background-image:
+    radial-gradient(
+      120% 120% at 85% 20%,
+      rgba(255,122,0,.12),
+      rgba(255,122,0,0)
+    ),
+    radial-gradient(
+      160% 140% at 50% 35%,
+      rgba(0,0,0,0),
+      rgba(0,0,0,.55)
+    );
+  background-repeat:no-repeat;
+}
+
+/* CENTERING */
+.page{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:48px 24px;
+}
+
+/* CARD */
+.card{
+  position:relative;
+  z-index:2;
+
+  width:100%;
+  max-width:720px;
+  padding:110px 48px 48px;
+
+  background:
+    linear-gradient(180deg, var(--card), var(--card2));
+  border:1px solid var(--border);
+  border-radius:24px;
+
+  box-shadow:
+    0 45px 130px rgba(0,0,0,.75),
+    inset 0 1px 0 rgba(255,255,255,.03);
+}
+
+/* LOGO BLOCK */
+.top{
+  position:absolute;
+  top:28px;
+  left:32px;
+  z-index:10;
+
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:18px;
+
+  will-change: transform;
+  transition: transform .15s ease-out;
+
+  animation: logoFade 1s ease forwards;
+  opacity:0;
+}
+
+/* Sticky logo */
+.top.sticky{
+  position:fixed;
+  top:18px;
+  left:32px;
+  z-index:999;
+}
+
+/* Logo */
+.brand img{
+  height:90px;
+  display:block;
+  filter: drop-shadow(0 10px 24px rgba(0,0,0,.85));
+}
+
+/* DIVIDER (Premium) */
+.divider{
+  position:relative;
+  width:72px;
+  height:2px;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(255,122,0,0),
+      rgba(255,122,0,.95),
+      rgba(255,122,0,0)
+    );
+
+  border-radius:2px;
+  opacity:.95;
+}
+
+/* Divider glow */
+.divider::after{
+  content:"";
+  position:absolute;
+  inset:-6px;
+
+  background:
+    radial-gradient(
+      ellipse at center,
+      rgba(255,122,0,.28),
+      transparent 65%
+    );
+
+  filter: blur(6px);
+  pointer-events:none;
+}
+
+/* HEADER */
+.header h1{
+  margin:0 0 10px;
+  font-size:24px;
+  font-weight:600;
+  letter-spacing:-0.02em;
+}
+
+.subtitle{
+  margin:0 0 40px;
+  font-size:14px;
+  color:var(--muted);
+  line-height:1.7;
+}
+
+/* FORM */
+.field{ margin-bottom:26px; }
+
+label{
+  display:block;
+  margin-bottom:8px;
+  font-size:14px;
+  font-weight:500;
+}
+
+input,
+textarea{
+  width:100%;
+  background:#0d0d0d;
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:16px 18px;
+  color:var(--text);
+  font-size:14px;
+
+  transition:
+    border-color .25s ease,
+    box-shadow .25s ease;
+}
+
+textarea{
+  min-height:130px;
+  resize:vertical;
+}
+
+input::placeholder,
+textarea::placeholder{
+  color:#6f6f6f;
+}
+
+input:focus,
+textarea:focus{
+  outline:none;
+  border-color:var(--accent);
+  box-shadow:
+    0 0 0 1px rgba(255,122,0,.32),
+    0 14px 34px rgba(255,122,0,.16);
+}
+
+/* Helper text */
+.hint{
+  margin-top:6px;
+  font-size:12px;
+  color:var(--muted);
+}
+
+/* BUTTON */
+.btn{
+  margin-top:8px;
+  width:100%;
+  padding:18px;
+
+  border:none;
+  border-radius:22px;
+
+  font-size:15px;
+  font-weight:600;
+  cursor:pointer;
+  color:#000;
+
+  background:
+    linear-gradient(135deg, var(--accent), var(--accent-soft));
+
+  box-shadow:
+    0 18px 50px rgba(255,122,0,.42);
+
+  transition:
+    transform .15s ease,
+    box-shadow .15s ease;
+}
+
+.btn:hover{
+  transform:translateY(-1px);
+  box-shadow:
+    0 26px 70px rgba(255,122,0,.52);
+}
+
+/* FOOTER */
+.footer{
+  margin-top:24px;
+  text-align:center;
+  font-size:12px;
+  color:var(--muted);
+}
+
+/* LOGO FADE-IN */
+@keyframes logoFade{
+  from{
+    opacity:0;
+    transform:translateY(-8px);
+  }
+  to{
+    opacity:1;
+    transform:none;
+  }
+}
+
+/* MOBILE */
+@media(max-width:600px){
+  .card{
+    padding:100px 28px 28px;
+  }
+
+  .brand img{
+    height:64px;
+  }
+
+  .divider{
+    width:56px;
+  }
+
+  .top.sticky{
+    left:20px;
+  }
+}

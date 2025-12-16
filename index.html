@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BX Media – Project Brief</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css"/>
+</head>
+
+<body>
+
+  <main class="page">
+
+    <section class="card" id="formCard">
+
+      <!-- LOGO BLOCK -->
+      <div class="top" id="logoBar">
+        <div class="brand">
+          <img src="Main Logo.png" alt="BX Media">
+        </div>
+        <div class="divider"></div>
+      </div>
+
+      <!-- HEADER -->
+      <header class="header">
+        <h1>Project Brief Submission</h1>
+        <p class="subtitle">
+          Share your project details so we can prepare a tailored proposal.
+        </p>
+      </header>
+
+      <!-- FORM -->
+      <form class="form">
+
+        <div class="field">
+          <label>Company Name</label>
+          <input type="text" required>
+        </div>
+
+        <div class="field">
+          <label>Event / Project Name</label>
+          <input type="text" required>
+        </div>
+
+        <div class="field">
+          <label>Event / Project Brief</label>
+          <textarea required></textarea>
+        </div>
+
+        <div class="field">
+          <label>Requirement in Brief</label>
+          <textarea required></textarea>
+          <div class="hint">
+            Tell us what output you need (photos, videos, or both).
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Reference Files (Google Drive Link)</label>
+          <input type="url" placeholder="https://drive.google.com/...">
+          <div class="hint">
+            Upload your files to Google Drive and share the view link.
+          </div>
+        </div>
+
+        <button class="btn" type="submit">Submit Project Brief</button>
+
+        <footer class="footer">
+          BX Media © All rights reserved
+        </footer>
+
+      </form>
+
+    </section>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
