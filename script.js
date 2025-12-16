@@ -1,5 +1,5 @@
 // 1) SET YOUR BACKEND ENDPOINT (Google Apps Script Web App URL)
-const BACKEND_ENDPOINT = "https://script.google.com/macros/s/AKfycby4tVeuqaJU0MZi_iMDD5R1VBV4P_WK1qHK7HIIuGL290wEAtAND31GLsd1a0I_-oip/exec";
+const BACKEND_ENDPOINT = "https://script.google.com/macros/s/AKfycbwsDZyeqDnUVq1IyC1t9yakxpG6pkrtu-oWWwE2K3fDgJ4lMiq6gcSoUBaK3XFfVFvm/exec";
 
 // Elements
 const form = document.getElementById("bxForm");
@@ -178,3 +178,4 @@ window.addEventListener("scroll", () => {
 
 // Init
 applyLang("en");
+
