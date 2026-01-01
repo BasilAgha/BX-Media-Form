@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>BX Media – Project Brief</title>
+  <title>BX Media Project Intake</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="style.css"/>
 </head>
@@ -28,54 +28,328 @@
 
       <!-- HEADER -->
       <header class="header">
-        <h1>Project Brief Submission</h1>
+        <h1>Project Intake Form</h1>
         <p class="subtitle">
-          Share your project details so we can prepare a tailored proposal.
+          Tell us about your project so we can build a tailored proposal.
         </p>
       </header>
 
+      <!-- PROGRESS -->
+      <div class="progress">
+        <div class="progress-meta">
+          <span class="progress-step" id="stepLabel">Step 1 of 7</span>
+          <span class="progress-title" id="stepTitle">Basic Info</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+      </div>
+
       <!-- FORM -->
-      <form class="form">
+      <form class="form" id="bxForm" novalidate>
 
-        <div class="field">
-          <label>Company Name</label>
-          <input type="text" required>
+        <div class="steps">
+          <section class="form-step active" data-step="1" data-title="Basic Info">
+            <div class="section-head">
+              <h2>Section 1 - Basic Info</h2>
+            </div>
+            <div class="step-hint hidden" id="stepOneHint">
+              Please complete all required fields in this section before continuing.
+            </div>
+
+            <div class="field">
+              <label for="full_name">Full Name <span class="required">Required</span></label>
+              <input type="text" id="full_name" name="full_name" autocomplete="name" required>
+            </div>
+
+            <div class="field">
+              <label for="company_name">Company Name <span class="required">Required</span></label>
+              <input type="text" id="company_name" name="company_name" autocomplete="organization" required>
+            </div>
+
+            <div class="field">
+              <label for="role_title">Role / Title <span class="required">Required</span></label>
+              <input type="text" id="role_title" name="role_title" autocomplete="organization-title" required>
+            </div>
+
+            <div class="field">
+              <label for="email">Email <span class="required">Required</span></label>
+              <input type="email" id="email" name="email" autocomplete="email" required>
+            </div>
+
+            <div class="field">
+              <label for="phone_whatsapp">Phone / WhatsApp <span class="required">Required</span></label>
+              <input type="tel" id="phone_whatsapp" name="phone_whatsapp" autocomplete="tel" required>
+            </div>
+          </section>
+
+          <section class="form-step" data-step="2" data-title="Project Type & Goal">
+            <div class="section-head">
+              <h2>Section 2 - Project Type & Goal</h2>
+            </div>
+
+            <div class="field">
+              <label>Project Types</label>
+              <div class="option-grid">
+                <label class="option">
+                  <input type="checkbox" name="project_types" value="Video production">
+                  <span>Video production</span>
+                </label>
+                <label class="option">
+                  <input type="checkbox" name="project_types" value="Photography">
+                  <span>Photography</span>
+                </label>
+                <label class="option">
+                  <input type="checkbox" name="project_types" value="Social media content">
+                  <span>Social media content</span>
+                </label>
+                <label class="option">
+                  <input type="checkbox" name="project_types" value="Event coverage">
+                  <span>Event coverage</span>
+                </label>
+                <label class="option">
+                  <input type="checkbox" name="project_types" value="Automotive content">
+                  <span>Automotive content</span>
+                </label>
+                <label class="option">
+                  <input type="checkbox" name="project_types" value="Brand launch">
+                  <span>Brand launch</span>
+                </label>
+                <label class="option">
+                  <input type="checkbox" name="project_types" value="Ongoing / retainer">
+                  <span>Ongoing / retainer</span>
+                </label>
+                <label class="option">
+                  <input type="checkbox" name="project_types" value="Other" data-other-toggle="project_types_other">
+                  <span>Other</span>
+                </label>
+              </div>
+              <input type="text" class="inline-other" id="project_types_other" name="project_types_other" placeholder="Please specify" aria-label="Other project type">
+            </div>
+
+            <div class="field">
+              <label>Project Goal</label>
+              <div class="option-grid">
+                <label class="option">
+                  <input type="radio" name="project_goal" value="Awareness">
+                  <span>Awareness</span>
+                </label>
+                <label class="option">
+                  <input type="radio" name="project_goal" value="Lead generation">
+                  <span>Lead generation</span>
+                </label>
+                <label class="option">
+                  <input type="radio" name="project_goal" value="Sales / conversions">
+                  <span>Sales / conversions</span>
+                </label>
+                <label class="option">
+                  <input type="radio" name="project_goal" value="Brand positioning">
+                  <span>Brand positioning</span>
+                </label>
+                <label class="option">
+                  <input type="radio" name="project_goal" value="Not sure yet">
+                  <span>Not sure yet</span>
+                </label>
+              </div>
+            </div>
+          </section>
+
+          <section class="form-step" data-step="3" data-title="Deliverables & Usage">
+            <div class="section-head">
+              <h2>Section 3 - Deliverables & Usage</h2>
+            </div>
+
+            <div class="field">
+              <label for="deliverables">Deliverables</label>
+              <textarea id="deliverables" name="deliverables" placeholder="3 short videos + photos for social media"></textarea>
+            </div>
+
+            <div class="field">
+              <label>Content Usage</label>
+              <div class="option-grid">
+                <label class="option">
+                  <input type="checkbox" name="content_usage" value="Social media">
+                  <span>Social media</span>
+                </label>
+                <label class="option">
+                  <input type="checkbox" name="content_usage" value="Paid ads">
+                  <span>Paid ads</span>
+                </label>
+                <label class="option">
+                  <input type="checkbox" name="content_usage" value="Website">
+                  <span>Website</span>
+                </label>
+                <label class="option">
+                  <input type="checkbox" name="content_usage" value="Events">
+                  <span>Events</span>
+                </label>
+                <label class="option">
+                  <input type="checkbox" name="content_usage" value="Internal">
+                  <span>Internal</span>
+                </label>
+                <label class="option">
+                  <input type="checkbox" name="content_usage" value="Broadcast / OOH">
+                  <span>Broadcast / OOH</span>
+                </label>
+              </div>
+            </div>
+          </section>
+
+          <section class="form-step" data-step="4" data-title="Timing & Location">
+            <div class="section-head">
+              <h2>Section 4 - Timing & Location</h2>
+            </div>
+
+            <div class="field">
+              <label>Timeline</label>
+              <div class="option-grid">
+                <label class="option">
+                  <input type="radio" name="timeline" value="ASAP">
+                  <span>ASAP</span>
+                </label>
+                <label class="option">
+                  <input type="radio" name="timeline" value="Specific date" data-toggle="deadline">
+                  <span>Specific date</span>
+                </label>
+                <label class="option">
+                  <input type="radio" name="timeline" value="Flexible">
+                  <span>Flexible</span>
+                </label>
+              </div>
+              <div class="inline-extra" id="deadlineWrap">
+                <label for="deadline">Deadline</label>
+                <input type="date" id="deadline" name="deadline">
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Shoot Location</label>
+              <div class="option-grid">
+                <label class="option">
+                  <input type="radio" name="shoot_location" value="Riyadh">
+                  <span>Riyadh</span>
+                </label>
+                <label class="option">
+                  <input type="radio" name="shoot_location" value="Other city" data-toggle="shoot_location_other">
+                  <span>Other city</span>
+                </label>
+                <label class="option">
+                  <input type="radio" name="shoot_location" value="Multiple locations">
+                  <span>Multiple locations</span>
+                </label>
+                <label class="option">
+                  <input type="radio" name="shoot_location" value="Not decided yet">
+                  <span>Not decided yet</span>
+                </label>
+              </div>
+              <input type="text" class="inline-other" id="shoot_location_other" name="shoot_location_other" placeholder="City name" aria-label="Other city">
+            </div>
+          </section>
+
+          <section class="form-step" data-step="5" data-title="Creative Direction">
+            <div class="section-head">
+              <h2>Section 5 - Creative Direction <span class="optional">Optional</span></h2>
+            </div>
+
+            <div class="field">
+              <label for="references">References (text or URL)</label>
+              <input type="text" id="references" name="references" placeholder="Links or notes">
+            </div>
+
+            <div class="field">
+              <label>Creative Direction</label>
+              <div class="option-grid">
+                <label class="option">
+                  <input type="radio" name="creative_direction" value="BX Media leads creative">
+                  <span>BX Media leads creative</span>
+                </label>
+                <label class="option">
+                  <input type="radio" name="creative_direction" value="Client has clear direction">
+                  <span>Client has clear direction</span>
+                </label>
+                <label class="option">
+                  <input type="radio" name="creative_direction" value="Not sure yet">
+                  <span>Not sure yet</span>
+                </label>
+              </div>
+            </div>
+          </section>
+
+          <section class="form-step" data-step="6" data-title="Budget">
+            <div class="section-head">
+              <h2>Section 6 - Budget</h2>
+            </div>
+
+            <div class="field">
+              <label>Budget Range</label>
+              <div class="option-grid">
+                <label class="option">
+                  <input type="radio" name="budget_range" value="Under 10,000 SAR">
+                  <span>Under 10,000 SAR</span>
+                </label>
+                <label class="option">
+                  <input type="radio" name="budget_range" value="10,000 - 25,000 SAR">
+                  <span>10,000 - 25,000 SAR</span>
+                </label>
+                <label class="option">
+                  <input type="radio" name="budget_range" value="25,000 - 50,000 SAR">
+                  <span>25,000 - 50,000 SAR</span>
+                </label>
+                <label class="option">
+                  <input type="radio" name="budget_range" value="50,000+ SAR">
+                  <span>50,000+ SAR</span>
+                </label>
+                <label class="option">
+                  <input type="radio" name="budget_range" value="Not sure yet">
+                  <span>Not sure yet</span>
+                </label>
+              </div>
+            </div>
+          </section>
+
+          <section class="form-step" data-step="7" data-title="Project Summary">
+            <div class="section-head">
+              <h2>Section 7 - Project Summary</h2>
+            </div>
+
+            <div class="field">
+              <label for="project_summary">Project Summary</label>
+              <textarea
+                id="project_summary"
+                name="project_summary"
+                placeholder="We are launching a new product and need short-form videos and photos for Instagram and paid ads within one month."
+              ></textarea>
+              <div class="hint">
+                Briefly describe what you're trying to achieve and any key details.
+              </div>
+            </div>
+          </section>
         </div>
 
-        <div class="field">
-          <label>Event / Project Name</label>
-          <input type="text" required>
+        <div class="actions">
+          <button class="btn ghost" type="button" id="prevBtn">Back</button>
+          <button class="btn" type="button" id="nextBtn">Next</button>
+          <button class="btn" type="submit" id="submitBtn">Submit Project Request</button>
         </div>
 
-        <div class="field">
-          <label>Event / Project Brief</label>
-          <textarea required></textarea>
-        </div>
-
-        <div class="field">
-          <label>Requirement in Brief</label>
-          <textarea required></textarea>
-          <div class="hint">
-            Tell us what output you need (photos, videos, or both).
-          </div>
-        </div>
-
-        <div class="field">
-          <label>Reference Files (Google Drive Link)</label>
-          <input type="url" placeholder="https://drive.google.com/...">
-          <div class="hint">
-            Upload your files to Google Drive and share the view link.
-          </div>
-        </div>
-
-        <button class="btn" type="submit">Submit Project Brief</button>
+        <div class="required-note">Step 1 fields are required to submit.</div>
 
         <footer class="footer">
-          BX Media © All rights reserved
+          BX Media Ac All rights reserved
         </footer>
 
       </form>
 
+    </section>
+
+    <section class="card success hidden" id="successCard">
+      <header class="header">
+        <h1>Request received</h1>
+        <p class="subtitle">
+          Thanks for reaching out. Our team will review your request and contact you to schedule a quick discovery call if it's a good fit.
+        </p>
+      </header>
+      <button class="btn" type="button" id="newSubmissionBtn">Submit another request</button>
     </section>
 
   </main>

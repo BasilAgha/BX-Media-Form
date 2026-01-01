@@ -1,205 +1,386 @@
 // 1) SET YOUR BACKEND ENDPOINT (Google Apps Script Web App URL)
-const BACKEND_ENDPOINT = "https://script.google.com/macros/s/AKfycbwsDZyeqDnUVq1IyC1t9yakxpG6pkrtu-oWWwE2K3fDgJ4lMiq6gcSoUBaK3XFfVFvm/execc";
+const BACKEND_ENDPOINT = "https://script.google.com/macros/s/AKfycbxFaPYNYhLidpvvcQsugvhzJEwxvGV0yLelgoljDl_3S1X6d_h0OUZoujuuCKIKK6z1vQ/exec";
 
-// Translation map (keep as provided)
-const T = {
-  en: {
-    title: "Project Brief Submission",
-    subtitle: "Share your project details so we can prepare a tailored proposal.",
-    company_label: "Company Name",
-    event_label: "Event / Project Name",
-    brief_label: "Event / Project Brief",
-    req_label: "Requirement in Brief",
-    req_hint:
-      "Tell us the required output (photos, videos, or both). Include quantity, style, and references if available.",
-    drive_label: "Reference Files (Google Drive Link)",
-    drive_hint:
-      "Upload your references to Google Drive and set access to ƒ?oAnyone with the link (Viewer)ƒ??, then paste the link here.",
-    submit: "Submit Project Brief",
-    success_title: "Submitted successfully",
-    success_body:
-      "Thank you. Your project brief has been received. Weƒ?Tll review it and get back to you shortly.",
-    again: "Submit another brief",
-    invalid_drive: "Please paste a valid Google Drive link (drive.google.com).",
-    required_backend:
-      "Backend endpoint is not set. Add your Google Apps Script Web App URL in script.js."
-  },
-  ar: {
-    title: "OOñO3OU, U.U,OrOæ OU,U.O'OñU^O1",
-    subtitle: "USOñOªU% O¦O1O\"OÝOc OU,O¦U?OOæUSU, OU,O¦OU,USOc U,U.O3OO1O_O¦U+O U?US OO1O_OO_ O1OñO O3O1Oñ U.U+OO3O\".",
-    company_label: "OO3U. OU,O'OñUŸOc",
-    event_label: "OO3U. OU,U?O1OU,USOc / OU,U.O'OñU^O1",
-    brief_label: "U^OæU? OU,U?O1OU,USOc / OU,U.O'OñU^O1",
-    req_label: "OU,U.O¦OúU,O\"OO¦ O\"OOrO¦OæOOñ",
-    req_hint:
-      "OOøUŸOñ OU,U.OrOñOªOO¦ OU,U.OúU,U^O\"Oc (OæU^OñOO U?USO_USU^OO OœU^ OU,OO®U+USU+ U.O1OU<)OO U.O1 OU,O1O_O_ U^OU,OúOO\"O1/OU,OœO3U,U^O\" U^OœUS U.OñOOªO1 OU+ U^OªO_O¦.",
-    drive_label: "OñOO\"Oú OU,U.U,U?OO¦ (Google Drive)",
-    drive_hint:
-      "U,U. O\"OñU?O1 OU,U.OñOOªO1 O1U,U% Google Drive O®U. OOO\"Oú OU,U.O'OOñUŸOc O1U,U% ƒ?oOœUS O'OrOæ U,O_USUØ OU,OñOO\"Oú (O1OñO)ƒ?? U^OU,OæU, OU,OñOO\"Oú UØU+O.",
-    submit: "OOñO3OU, OU,OúU,O\"",
-    success_title: "O¦U. OU,OOñO3OU, O\"U+OªOO-",
-    success_body:
-      "O'UŸOñOU< U,UŸ. O¦U. OO3O¦U,OU. U.U,OrOæ OU,U.O'OñU^O1 U^O3U+U,U^U. O\"U.OñOOªO1O¦UØ U^OU,OñO_ O1U,USUŸ U,OñUSO\"OU<.",
-    again: "OOñO3OU, OúU,O\" OªO_USO_",
-    invalid_drive: "USOñOªU% OO_OrOU, OñOO\"Oú Google Drive OæO-USO- (drive.google.com).",
-    required_backend:
-      "U,U. USO¦U. OO\"Oú OñOO\"Oú OU,OO3O¦U,O\"OU,. OO1 OñOO\"Oú Google Apps Script Web App O_OOrU, script.js."
-  }
-};
+const STORAGE_KEY = "bx_media_intake_v1";
+const FORM_VERSION = "v1";
 
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("bxForm");
   const formCard = document.getElementById("formCard");
   const successCard = document.getElementById("successCard");
 
-  const driveInput = document.getElementById("drive_link");
-  const driveError = document.getElementById("driveError");
+  const stepLabel = document.getElementById("stepLabel");
+  const stepTitle = document.getElementById("stepTitle");
+  const progressFill = document.getElementById("progressFill");
 
-  const langButtons = document.querySelectorAll(".pill");
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  const submitBtn = document.getElementById("submitBtn");
   const newSubmissionBtn = document.getElementById("newSubmissionBtn");
+
+  const deadlineWrap = document.getElementById("deadlineWrap");
+  const deadlineInput = document.getElementById("deadline");
+  const projectTypesOther = document.getElementById("project_types_other");
+  const shootLocationOther = document.getElementById("shoot_location_other");
+  const stepOneHint = document.getElementById("stepOneHint");
   const logoBar = document.getElementById("logoBar");
 
-  const textTargets = {
-    title: document.getElementById("t_title"),
-    subtitle: document.getElementById("t_subtitle"),
-    company: document.querySelector('label[for="company_name"]'),
-    event: document.querySelector('label[for="event_name"]'),
-    brief: document.querySelector('label[for="project_brief"]'),
-    req: document.querySelector('label[for="requirements"]'),
-    reqHint: document.getElementById("t_req_hint"),
-    drive: document.querySelector('label[for="drive_link"]'),
-    driveHint: document.getElementById("t_drive_hint"),
-    submit: document.getElementById("t_submit"),
-    successTitle: document.getElementById("t_success_title"),
-    successBody: document.getElementById("t_success_body")
-  };
+  const steps = Array.from(document.querySelectorAll(".form-step"));
+  const totalSteps = steps.length;
+  let currentStep = 0;
 
-  if (!form || !formCard) {
+  if (!form || !formCard || !successCard || steps.length === 0) {
     console.warn("BX form: expected form elements not found; script skipped.");
     return;
   }
 
-  let currentLang = "en";
-
-  const setText = (el, text) => {
-    if (el) el.innerText = text;
-  };
-
-  // Apply language text + direction (safe against missing nodes)
-  function applyLang(lang) {
-    currentLang = lang;
-    document.documentElement.lang = lang;
-    document.body.setAttribute("dir", lang === "ar" ? "rtl" : "ltr");
-
-    langButtons.forEach(btn => {
-      btn.classList.toggle("active", btn.dataset.lang === lang);
-    });
-
-    setText(textTargets.title, T[lang].title);
-    setText(textTargets.subtitle, T[lang].subtitle);
-    setText(textTargets.company, T[lang].company_label);
-    setText(textTargets.event, T[lang].event_label);
-    setText(textTargets.brief, T[lang].brief_label);
-    setText(textTargets.req, T[lang].req_label);
-    setText(textTargets.reqHint, T[lang].req_hint);
-    setText(textTargets.drive, T[lang].drive_label);
-    setText(textTargets.driveHint, T[lang].drive_hint);
-    setText(textTargets.submit, T[lang].submit);
-    setText(textTargets.successTitle, T[lang].success_title);
-    setText(textTargets.successBody, T[lang].success_body);
-    if (newSubmissionBtn) newSubmissionBtn.innerText = T[lang].again;
-
-    if (driveError) driveError.innerText = "";
+  function generateId() {
+    if (window.crypto && crypto.randomUUID) {
+      return `proj_${crypto.randomUUID()}`;
+    }
+    const random = Math.random().toString(36).slice(2, 8);
+    return `proj_${Date.now()}_${random}`;
   }
 
-  // Basic drive link validation
-  function isValidDriveLink(url) {
-    if (!url) return true; // optional field
-    try {
-      const u = new URL(url);
-      return u.hostname.includes("drive.google.com");
-    } catch {
-      return false;
+  function normalizeLeadSource(value) {
+    if (!value) return "Website";
+    const lowered = value.toLowerCase();
+    if (lowered.includes("insta") || lowered === "ig") return "Instagram";
+    if (lowered.includes("refer")) return "Referral";
+    if (lowered.includes("web")) return "Website";
+    return "Website";
+  }
+
+  function detectLeadSource() {
+    const params = new URLSearchParams(window.location.search);
+    const manual = params.get("lead_source") || params.get("source") || params.get("utm_source");
+    if (manual) return normalizeLeadSource(manual);
+    const ref = document.referrer.toLowerCase();
+    if (ref.includes("instagram.com")) return "Instagram";
+    return "Website";
+  }
+
+  function detectClientType() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("client_type") || "";
+  }
+
+  function toggleInline(el, shouldShow) {
+    if (!el) return;
+    el.classList.toggle("is-visible", shouldShow);
+  }
+
+  function updateInlineFields() {
+    const timelineValue = form.querySelector("input[name=\"timeline\"]:checked")?.value || "";
+    toggleInline(deadlineWrap, timelineValue === "Specific date");
+    if (timelineValue !== "Specific date" && deadlineInput) {
+      deadlineInput.value = "";
+    }
+
+    const shootLocationValue = form.querySelector("input[name=\"shoot_location\"]:checked")?.value || "";
+    toggleInline(shootLocationOther, shootLocationValue === "Other city");
+    if (shootLocationValue !== "Other city" && shootLocationOther) {
+      shootLocationOther.value = "";
+    }
+
+    const otherProjectType = form.querySelector("input[name=\"project_types\"][value=\"Other\"]");
+    const showProjectOther = otherProjectType ? otherProjectType.checked : false;
+    toggleInline(projectTypesOther, showProjectOther);
+    if (!showProjectOther && projectTypesOther) {
+      projectTypesOther.value = "";
     }
   }
 
-  // Language switch
-  langButtons.forEach(btn => {
-    btn.addEventListener("click", () => applyLang(btn.dataset.lang));
+  function showStep(index) {
+    steps.forEach((step, idx) => {
+      step.classList.toggle("active", idx === index);
+    });
+
+    const stepNumber = index + 1;
+    const title = steps[index].dataset.title || "";
+    if (stepLabel) stepLabel.textContent = `Step ${stepNumber} of ${totalSteps}`;
+    if (stepTitle) stepTitle.textContent = title;
+    if (progressFill) {
+      const percent = Math.round((stepNumber / totalSteps) * 100);
+      progressFill.style.width = `${percent}%`;
+    }
+
+    if (prevBtn) prevBtn.style.display = index === 0 ? "none" : "inline-flex";
+    if (nextBtn) nextBtn.style.display = index === totalSteps - 1 ? "none" : "inline-flex";
+    if (submitBtn) submitBtn.style.display = index === totalSteps - 1 ? "inline-flex" : "none";
+
+    updateInlineFields();
+  }
+
+  function collectMultiValues(name, otherInput) {
+    const checked = Array.from(form.querySelectorAll(`input[name=\"${name}\"]:checked`));
+    const values = checked.map((input) => input.value);
+
+    if (name === "project_types") {
+      const otherIndex = values.indexOf("Other");
+      const otherValue = (otherInput?.value || "").trim();
+      if (otherIndex >= 0 && otherValue) {
+        values[otherIndex] = `Other: ${otherValue}`;
+      }
+    }
+
+    return values.join(", ");
+  }
+
+  function buildPayload() {
+    const now = new Date().toISOString();
+    const shootLocationValue = form.querySelector("input[name=\"shoot_location\"]:checked")?.value || "";
+    const shootLocationOtherValue = (shootLocationOther?.value || "").trim();
+    const finalShootLocation =
+      shootLocationValue === "Other city" && shootLocationOtherValue
+        ? `Other city: ${shootLocationOtherValue}`
+        : shootLocationValue;
+
+    const timelineValue = form.querySelector("input[name=\"timeline\"]:checked")?.value || "";
+    const deadlineValue = timelineValue === "Specific date" ? (deadlineInput?.value || "") : "";
+
+    return {
+      id: generateId(),
+      full_name: form.querySelector("#full_name")?.value.trim() || "",
+      company_name: form.querySelector("#company_name")?.value.trim() || "",
+      role_title: form.querySelector("#role_title")?.value.trim() || "",
+      email: form.querySelector("#email")?.value.trim() || "",
+      phone_whatsapp: form.querySelector("#phone_whatsapp")?.value.trim() || "",
+      project_types: collectMultiValues("project_types", projectTypesOther),
+      project_goal: form.querySelector("input[name=\"project_goal\"]:checked")?.value || "",
+      deliverables: form.querySelector("#deliverables")?.value.trim() || "",
+      content_usage: collectMultiValues("content_usage"),
+      timeline: timelineValue,
+      deadline: deadlineValue,
+      shoot_location: finalShootLocation,
+      references: form.querySelector("#references")?.value.trim() || "",
+      creative_direction: form.querySelector("input[name=\"creative_direction\"]:checked")?.value || "",
+      budget_range: form.querySelector("input[name=\"budget_range\"]:checked")?.value || "",
+      project_summary: form.querySelector("#project_summary")?.value.trim() || "",
+      lead_status: "new",
+      lead_score: "",
+      lead_source: detectLeadSource(),
+      client_type: detectClientType(),
+      created_at: now,
+      updated_at: now,
+      form_version: FORM_VERSION
+    };
+  }
+
+  function saveDraft() {
+    const formData = new FormData(form);
+    const data = {};
+
+    formData.forEach((value, key) => {
+      if (data[key]) {
+        if (Array.isArray(data[key])) {
+          data[key].push(value);
+        } else {
+          data[key] = [data[key], value];
+        }
+      } else {
+        data[key] = value;
+      }
+    });
+
+    data.currentStep = currentStep;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+
+  function loadDraft() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+
+    try {
+      const data = JSON.parse(raw);
+      Object.keys(data).forEach((key) => {
+        if (key === "currentStep") return;
+        const value = data[key];
+
+        const field = form.elements[key];
+        if (!field) return;
+
+        if (field instanceof RadioNodeList) {
+          const values = Array.isArray(value) ? value : [value];
+          values.forEach((val) => {
+            const input = form.querySelector(`input[name=\"${key}\"][value=\"${val}\"]`);
+            if (input) input.checked = true;
+          });
+        } else if (field.type === "checkbox") {
+          field.checked = true;
+        } else {
+          field.value = value;
+        }
+      });
+
+      if (typeof data.currentStep === "number") {
+        currentStep = Math.min(Math.max(data.currentStep, 0), totalSteps - 1);
+      }
+    } catch (err) {
+      console.warn("Draft restore failed.");
+    }
+  }
+
+  function setStepOneHint(isVisible) {
+    if (!stepOneHint) return;
+    stepOneHint.classList.toggle("hidden", !isVisible);
+  }
+
+  function validateStepOne() {
+    const requiredIds = [
+      "full_name",
+      "company_name",
+      "role_title",
+      "email",
+      "phone_whatsapp"
+    ];
+
+    for (const id of requiredIds) {
+      const input = form.querySelector(`#${id}`);
+      if (!input || !input.value.trim()) {
+        setStepOneHint(true);
+        input?.focus();
+        return false;
+      }
+
+      if (id === "email" && !input.checkValidity()) {
+        setStepOneHint(true);
+        input?.focus();
+        return false;
+      }
+    }
+
+    setStepOneHint(false);
+    return true;
+  }
+
+  function setLoading(isLoading) {
+    if (!submitBtn || !nextBtn || !prevBtn) return;
+
+    submitBtn.disabled = isLoading;
+    nextBtn.disabled = isLoading;
+    prevBtn.disabled = isLoading;
+    submitBtn.textContent = isLoading ? "Submitting..." : "Submit Project Request";
+  }
+
+  form.addEventListener("input", () => {
+    saveDraft();
+    updateInlineFields();
   });
 
-  // Reset to new submission
+  if (prevBtn) {
+    prevBtn.addEventListener("click", () => {
+      if (currentStep === 0) return;
+      saveDraft();
+      currentStep -= 1;
+      showStep(currentStep);
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener("click", () => {
+      if (currentStep >= totalSteps - 1) return;
+      if (currentStep === 0 && !validateStepOne()) return;
+      setStepOneHint(false);
+      saveDraft();
+      currentStep += 1;
+      showStep(currentStep);
+    });
+  }
+
   if (newSubmissionBtn) {
     newSubmissionBtn.addEventListener("click", () => {
       form.reset();
-      if (successCard) successCard.classList.add("hidden");
+      localStorage.removeItem(STORAGE_KEY);
+      currentStep = 0;
+      updateInlineFields();
+      showStep(currentStep);
+      successCard.classList.add("hidden");
       formCard.classList.remove("hidden");
-      if (driveError) driveError.innerText = "";
     });
   }
 
-  // Submit
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    // Validate drive link (optional)
-    const driveVal = driveInput ? driveInput.value.trim() : "";
-    if (driveInput && driveError && !isValidDriveLink(driveVal)) {
-      driveError.innerText = T[currentLang].invalid_drive;
-      driveInput.focus();
-      return;
-    } else if (driveError) {
-      driveError.innerText = "";
-    }
+    if (!validateStepOne()) return;
+    setStepOneHint(false);
 
-    // Backend check
     if (!BACKEND_ENDPOINT || BACKEND_ENDPOINT.includes("YOUR_GOOGLE")) {
-      alert(T[currentLang].required_backend);
+      alert("Backend endpoint is not set. Add your Google Apps Script Web App URL in script.js.");
       return;
     }
 
-    // Build payload
-    const fd = new FormData(form);
-    // send language as well (useful for your sheet)
-    fd.append("lang", currentLang);
+    const payload = buildPayload();
+    const orderedKeys = [
+      "id",
+      "full_name",
+      "company_name",
+      "role_title",
+      "email",
+      "phone_whatsapp",
+      "project_types",
+      "project_goal",
+      "deliverables",
+      "content_usage",
+      "timeline",
+      "deadline",
+      "shoot_location",
+      "references",
+      "creative_direction",
+      "budget_range",
+      "project_summary",
+      "lead_status",
+      "lead_score",
+      "lead_source",
+      "client_type",
+      "created_at",
+      "updated_at",
+      "form_version"
+    ];
+
+    const formData = new FormData();
+    orderedKeys.forEach((key) => {
+      formData.append(key, payload[key] || "");
+    });
+
+    setLoading(true);
 
     try {
       await fetch(BACKEND_ENDPOINT, {
         method: "POST",
-        body: fd
+        body: formData
       });
 
-      // Show success
+      form.reset();
+      localStorage.removeItem(STORAGE_KEY);
+      currentStep = 0;
+      showStep(currentStep);
+      updateInlineFields();
       formCard.classList.add("hidden");
-      if (successCard) {
-        successCard.classList.remove("hidden");
-      } else {
-        alert("Submitted successfully.");
-        formCard.classList.remove("hidden");
-      }
+      successCard.classList.remove("hidden");
     } catch (err) {
       alert("Error submitting form. Please try again.");
+    } finally {
+      setLoading(false);
     }
   });
 
-  // Logo behavior
   if (logoBar) {
     window.addEventListener("scroll", () => {
       const scrollY = window.scrollY;
-
-      // Sticky behavior
       if (scrollY > 40) {
         logoBar.classList.add("sticky");
       } else {
         logoBar.classList.remove("sticky");
       }
 
-      // Subtle parallax (very light)
       const parallaxOffset = Math.min(scrollY * 0.08, 6);
       logoBar.style.transform = `translateY(${parallaxOffset}px)`;
     });
   }
 
-  // Init
-  applyLang("en");
+  loadDraft();
+  updateInlineFields();
+  showStep(currentStep);
 });
