@@ -53,7 +53,7 @@
             <div class="section-head">
               <h2>Section 1 - Basic Info</h2>
             </div>
-            <div class="step-hint hidden" id="stepOneHint">
+            <div class="step-hint hidden">
               Please complete all required fields in this section before continuing.
             </div>
 
@@ -87,9 +87,12 @@
             <div class="section-head">
               <h2>Section 2 - Project Type & Goal</h2>
             </div>
+            <div class="step-hint hidden">
+              Please complete all required fields in this section before continuing.
+            </div>
 
             <div class="field">
-              <label>Project Types</label>
+              <label class="group-title">Project Types <span class="required">Required</span></label>
               <div class="option-grid">
                 <label class="option">
                   <input type="checkbox" name="project_types" value="Video production">
@@ -128,7 +131,7 @@
             </div>
 
             <div class="field">
-              <label>Project Goal</label>
+              <label class="group-title">Project Goal <span class="required">Required</span></label>
               <div class="option-grid">
                 <label class="option">
                   <input type="radio" name="project_goal" value="Awareness">
@@ -158,14 +161,17 @@
             <div class="section-head">
               <h2>Section 3 - Deliverables & Usage</h2>
             </div>
-
-            <div class="field">
-              <label for="deliverables">Deliverables</label>
-              <textarea id="deliverables" name="deliverables" placeholder="3 short videos + photos for social media"></textarea>
+            <div class="step-hint hidden">
+              Please complete all required fields in this section before continuing.
             </div>
 
             <div class="field">
-              <label>Content Usage</label>
+              <label for="deliverables">Deliverables <span class="required">Required</span></label>
+              <textarea id="deliverables" name="deliverables" placeholder="3 short videos + photos for social media" required></textarea>
+            </div>
+
+            <div class="field">
+              <label class="group-title">Content Usage <span class="required">Required</span></label>
               <div class="option-grid">
                 <label class="option">
                   <input type="checkbox" name="content_usage" value="Social media">
@@ -199,9 +205,12 @@
             <div class="section-head">
               <h2>Section 4 - Timing & Location</h2>
             </div>
+            <div class="step-hint hidden">
+              Please complete all required fields in this section before continuing.
+            </div>
 
             <div class="field">
-              <label>Timeline</label>
+              <label class="group-title">Timeline <span class="required">Required</span></label>
               <div class="option-grid">
                 <label class="option">
                   <input type="radio" name="timeline" value="ASAP">
@@ -217,13 +226,13 @@
                 </label>
               </div>
               <div class="inline-extra" id="deadlineWrap">
-                <label for="deadline">Deadline</label>
+                <label for="deadline">Deadline <span class="required">Required</span></label>
                 <input type="date" id="deadline" name="deadline">
               </div>
             </div>
 
             <div class="field">
-              <label>Shoot Location</label>
+              <label class="group-title">Shoot Location <span class="required">Required</span></label>
               <div class="option-grid">
                 <label class="option">
                   <input type="radio" name="shoot_location" value="Riyadh">
@@ -248,16 +257,19 @@
 
           <section class="form-step" data-step="5" data-title="Creative Direction">
             <div class="section-head">
-              <h2>Section 5 - Creative Direction <span class="optional">Optional</span></h2>
+              <h2>Section 5 - Creative Direction</h2>
+            </div>
+            <div class="step-hint hidden">
+              Please complete all required fields in this section before continuing.
             </div>
 
             <div class="field">
-              <label for="references">References (text or URL)</label>
-              <input type="text" id="references" name="references" placeholder="Links or notes">
+              <label for="references">References (text or URL) <span class="required">Required</span></label>
+              <input type="text" id="references" name="references" placeholder="Links or notes" required>
             </div>
 
             <div class="field">
-              <label>Creative Direction</label>
+              <label class="group-title">Creative Direction <span class="required">Required</span></label>
               <div class="option-grid">
                 <label class="option">
                   <input type="radio" name="creative_direction" value="BX Media leads creative">
@@ -279,9 +291,12 @@
             <div class="section-head">
               <h2>Section 6 - Budget</h2>
             </div>
+            <div class="step-hint hidden">
+              Please complete all required fields in this section before continuing.
+            </div>
 
             <div class="field">
-              <label>Budget Range</label>
+              <label class="group-title">Budget Range <span class="required">Required</span></label>
               <div class="option-grid">
                 <label class="option">
                   <input type="radio" name="budget_range" value="Under 10,000 SAR">
@@ -311,13 +326,17 @@
             <div class="section-head">
               <h2>Section 7 - Project Summary</h2>
             </div>
+            <div class="step-hint hidden">
+              Please complete all required fields in this section before continuing.
+            </div>
 
             <div class="field">
-              <label for="project_summary">Project Summary</label>
+              <label for="project_summary">Project Summary <span class="required">Required</span></label>
               <textarea
                 id="project_summary"
                 name="project_summary"
                 placeholder="We are launching a new product and need short-form videos and photos for Instagram and paid ads within one month."
+                required
               ></textarea>
               <div class="hint">
                 Briefly describe what you're trying to achieve and any key details.
@@ -332,7 +351,8 @@
           <button class="btn" type="submit" id="submitBtn">Submit Project Request</button>
         </div>
 
-        <div class="required-note">Step 1 fields are required to submit.</div>
+        <div class="required-note">All fields are required to submit.</div>
+        <pre class="debug hidden" id="debugPanel"></pre>
 
         <footer class="footer">
           BX Media Ac All rights reserved

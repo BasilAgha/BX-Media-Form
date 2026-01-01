@@ -1,5 +1,5 @@
 // 1) SET YOUR BACKEND ENDPOINT (Google Apps Script Web App URL)
-const BACKEND_ENDPOINT = "https://script.google.com/macros/s/AKfycbxFaPYNYhLidpvvcQsugvhzJEwxvGV0yLelgoljDl_3S1X6d_h0OUZoujuuCKIKK6z1vQ/exec";
+const BACKEND_ENDPOINT = "https://script.google.com/macros/s/AKfycbzTqASZLBRj9ofNJQEum5NstALONdse7yDlb_2QPNL7jwMm5rLtDUMu17dS7j9Dw0uk/exec";
 
 const STORAGE_KEY = "bx_media_intake_v1";
 const FORM_VERSION = "v1";
@@ -22,7 +22,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const deadlineInput = document.getElementById("deadline");
   const projectTypesOther = document.getElementById("project_types_other");
   const shootLocationOther = document.getElementById("shoot_location_other");
-  const stepOneHint = document.getElementById("stepOneHint");
   const logoBar = document.getElementById("logoBar");
 
   const steps = Array.from(document.querySelectorAll(".form-step"));
@@ -213,44 +212,109 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
 
-      if (typeof data.currentStep === "number") {
-        currentStep = Math.min(Math.max(data.currentStep, 0), totalSteps - 1);
-      }
+      currentStep = 0;
     } catch (err) {
       console.warn("Draft restore failed.");
     }
   }
 
-  function setStepOneHint(isVisible) {
-    if (!stepOneHint) return;
-    stepOneHint.classList.toggle("hidden", !isVisible);
+  function getStepHint(stepEl) {
+    if (!stepEl) return null;
+    return stepEl.querySelector(".step-hint");
   }
 
-  function validateStepOne() {
-    const requiredIds = [
-      "full_name",
-      "company_name",
-      "role_title",
-      "email",
-      "phone_whatsapp"
-    ];
+  function setStepHint(stepEl, isVisible, message) {
+    const hint = getStepHint(stepEl);
+    if (!hint) return;
+    hint.classList.toggle("hidden", !isVisible);
+    if (message) {
+      hint.textContent = message;
+    }
+  }
 
-    for (const id of requiredIds) {
-      const input = form.querySelector(`#${id}`);
-      if (!input || !input.value.trim()) {
-        setStepOneHint(true);
-        input?.focus();
-        return false;
+  function validateStep(stepIndex) {
+    const stepEl = steps[stepIndex];
+    if (!stepEl) return false;
+
+    const inputs = Array.from(stepEl.querySelectorAll("input, textarea"));
+    const names = new Set();
+    const missingLabels = [];
+    let firstInvalid = null;
+    let anyFilled = false;
+
+    inputs.forEach((input) => {
+      if (!input.name) return;
+      names.add(input.name);
+      if (input.type === "radio" || input.type === "checkbox") {
+        if (input.checked) anyFilled = true;
+      } else if (input.value.trim()) {
+        anyFilled = true;
+      }
+    });
+
+    for (const name of names) {
+      const groupInputs = Array.from(stepEl.querySelectorAll(`input[name=\"${name}\"]`));
+      const textInputs = groupInputs.filter((input) => input.type !== "radio" && input.type !== "checkbox");
+      const hasChoiceInputs = groupInputs.some((input) => input.type === "radio" || input.type === "checkbox");
+
+      if (textInputs.length > 0) {
+        for (const input of textInputs) {
+          if (!input.value.trim()) {
+            firstInvalid = input;
+            const label = stepEl.querySelector(`label[for=\"${input.id}\"]`);
+            if (label) missingLabels.push(label.textContent.replace("Required", "").trim());
+            break;
+          }
+          if (input.type === "email" && !input.checkValidity()) {
+            firstInvalid = input;
+            break;
+          }
+        }
+      } else if (hasChoiceInputs) {
+        const anyChecked = groupInputs.some((input) => input.checked);
+        if (!anyChecked) {
+          firstInvalid = groupInputs[0];
+          const fieldLabel = groupInputs[0].closest(".field")?.querySelector(".group-title");
+          if (fieldLabel) missingLabels.push(fieldLabel.textContent.replace("Required", "").trim());
+        }
       }
 
-      if (id === "email" && !input.checkValidity()) {
-        setStepOneHint(true);
-        input?.focus();
-        return false;
+      if (firstInvalid) break;
+    }
+
+    const timelineValue = form.querySelector("input[name=\"timeline\"]:checked")?.value || "";
+    if (!firstInvalid && timelineValue === "Specific date" && deadlineInput && !deadlineInput.value) {
+      firstInvalid = deadlineInput;
+      const label = stepEl.querySelector("label[for=\"deadline\"]");
+      if (label) missingLabels.push(label.textContent.replace("Required", "").trim());
+    }
+
+    const shootLocationValue = form.querySelector("input[name=\"shoot_location\"]:checked")?.value || "";
+    if (!firstInvalid && shootLocationValue === "Other city" && shootLocationOther && !shootLocationOther.value.trim()) {
+      firstInvalid = shootLocationOther;
+      const label = stepEl.querySelector("label[for=\"shoot_location_other\"]");
+      if (label) missingLabels.push(label.textContent.replace("Required", "").trim());
+    }
+
+    const projectOtherChecked = form.querySelector("input[name=\"project_types\"][value=\"Other\"]")?.checked;
+    if (!firstInvalid && projectOtherChecked && projectTypesOther && !projectTypesOther.value.trim()) {
+      firstInvalid = projectTypesOther;
+      const label = stepEl.querySelector("label.group-title");
+      if (label && !missingLabels.includes(label.textContent.replace("Required", "").trim())) {
+        missingLabels.push(label.textContent.replace("Required", "").trim());
       }
     }
 
-    setStepOneHint(false);
+    if (firstInvalid) {
+      const baseMessage = anyFilled
+        ? `Please complete: ${missingLabels.join(", ") || "all required fields"}.`
+        : "Please fill all fields in this section.";
+      setStepHint(stepEl, true, baseMessage);
+      firstInvalid.focus();
+      return false;
+    }
+
+    setStepHint(stepEl, false);
     return true;
   }
 
@@ -280,8 +344,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (nextBtn) {
     nextBtn.addEventListener("click", () => {
       if (currentStep >= totalSteps - 1) return;
-      if (currentStep === 0 && !validateStepOne()) return;
-      setStepOneHint(false);
+      if (!validateStep(currentStep)) return;
       saveDraft();
       currentStep += 1;
       showStep(currentStep);
@@ -303,8 +366,13 @@ document.addEventListener("DOMContentLoaded", () => {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    if (!validateStepOne()) return;
-    setStepOneHint(false);
+    for (let i = 0; i < totalSteps; i += 1) {
+      if (!validateStep(i)) {
+        currentStep = i;
+        showStep(currentStep);
+        return;
+      }
+    }
 
     if (!BACKEND_ENDPOINT || BACKEND_ENDPOINT.includes("YOUR_GOOGLE")) {
       alert("Backend endpoint is not set. Add your Google Apps Script Web App URL in script.js.");
@@ -349,6 +417,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       await fetch(BACKEND_ENDPOINT, {
         method: "POST",
+        mode: "no-cors",
         body: formData
       });
 
@@ -363,6 +432,20 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("Error submitting form. Please try again.");
     } finally {
       setLoading(false);
+    }
+  });
+
+  form.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter") return;
+    const target = e.target;
+    if (!target || target.tagName === "TEXTAREA") return;
+
+    if (currentStep < totalSteps - 1) {
+      e.preventDefault();
+      if (!validateStep(currentStep)) return;
+      saveDraft();
+      currentStep += 1;
+      showStep(currentStep);
     }
   });
 

@@ -2,6 +2,8 @@
  * CONFIG
  ***********************/
 const SHEET_NAME = "project_intake";
+// Set this if the Apps Script project is standalone (not bound to the sheet).
+const SPREADSHEET_ID = "1g_cz68LE69sazCT_HR4EylbL5YcsJJorGKb4dJgIW7M";
 
 /***********************
  * UTILITIES
@@ -32,17 +34,28 @@ function doGet() {
 
 function doPost(e) {
   try {
-    if (!e || !e.postData || !e.postData.contents) {
+    if (!e || (!e.postData && !e.parameter)) {
       return jsonResponse({ ok: false, error: "Missing POST body" });
     }
 
-    const data = JSON.parse(e.postData.contents);
+    let data = {};
 
-    // Validate required fields
-    if (!data.email || !data.budget_range) {
+    if (e.postData && e.postData.contents) {
+      const contentType = (e.postData.type || "").toLowerCase();
+      if (contentType.includes("application/json")) {
+        data = JSON.parse(e.postData.contents);
+      } else {
+        data = e.parameter || {};
+      }
+    } else {
+      data = e.parameter || {};
+    }
+
+    // Validate required fields (Step 1 only)
+    if (!data.full_name || !data.company_name || !data.role_title || !data.email || !data.phone_whatsapp) {
       return jsonResponse({
         ok: false,
-        error: "Missing required fields: email or budget_range"
+        error: "Missing required fields in section 1"
       });
     }
 
@@ -68,7 +81,14 @@ function doPost(e) {
  * CORE LOGIC
  ***********************/
 function getSheet() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = SPREADSHEET_ID
+    ? SpreadsheetApp.openById(SPREADSHEET_ID)
+    : SpreadsheetApp.getActiveSpreadsheet();
+
+  if (!ss) {
+    throw new Error("Spreadsheet not found. Set SPREADSHEET_ID in code.gs.");
+  }
+
   const sheet = ss.getSheetByName(SHEET_NAME);
 
   if (!sheet) {
