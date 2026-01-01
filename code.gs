@@ -2,8 +2,7 @@
  * CONFIG
  ***********************/
 const SHEET_NAME = "project_intake";
-// Set this if the Apps Script project is standalone (not bound to the sheet).
-const SPREADSHEET_ID = "1g_cz68LE69sazCT_HR4EylbL5YcsJJorGKb4dJgIW7M";
+const SPREADSHEET_ID = "1R5AFPwT2VCYRzOGnY3Y6d2eHDZCQZ4sA26jADMaPxKU";
 
 /***********************
  * UTILITIES
@@ -22,6 +21,10 @@ function generateId() {
   return Utilities.getUuid();
 }
 
+function getValue(data, snake, camel) {
+  return data[snake] || data[camel] || "";
+}
+
 /***********************
  * ENTRY POINTS
  ***********************/
@@ -34,6 +37,8 @@ function doGet() {
 
 function doPost(e) {
   try {
+    console.log("RAW EVENT:", e);
+
     if (!e || (!e.postData && !e.parameter)) {
       return jsonResponse({ ok: false, error: "Missing POST body" });
     }
@@ -41,28 +46,80 @@ function doPost(e) {
     let data = {};
 
     if (e.postData && e.postData.contents) {
-      const contentType = (e.postData.type || "").toLowerCase();
-      if (contentType.includes("application/json")) {
-        data = JSON.parse(e.postData.contents);
-      } else {
-        data = e.parameter || {};
-      }
+      data = JSON.parse(e.postData.contents);
     } else {
       data = e.parameter || {};
     }
 
-    // Validate required fields (Step 1 only)
-    if (!data.full_name || !data.company_name || !data.role_title || !data.email || !data.phone_whatsapp) {
+    console.log("PARSED DATA:", data);
+
+    // Normalize required fields (all except references)
+    const fullName = getValue(data, "full_name", "fullName");
+    const company = getValue(data, "company_name", "companyName");
+    const role = getValue(data, "role_title", "roleTitle");
+    const email = data.email || "";
+    const phone = getValue(data, "phone_whatsapp", "phoneWhatsapp");
+    const projectTypes = getValue(data, "project_types", "projectTypes");
+    const projectGoal = getValue(data, "project_goal", "projectGoal");
+    const deliverables = data.deliverables || "";
+    const contentUsage = getValue(data, "content_usage", "contentUsage");
+    const timeline = data.timeline || "";
+    const deadline = data.deadline || "";
+    const shootLocation = getValue(data, "shoot_location", "shootLocation");
+    const creativeDirection = getValue(data, "creative_direction", "creativeDirection");
+    const budgetRange = getValue(data, "budget_range", "budgetRange");
+    const projectSummary = getValue(data, "project_summary", "projectSummary");
+    const createdAt = data.created_at || data.createdAt || "";
+    const updatedAt = data.updated_at || data.updatedAt || "";
+
+    if (
+      !fullName ||
+      !company ||
+      !role ||
+      !email ||
+      !phone ||
+      !projectTypes ||
+      !projectGoal ||
+      !deliverables ||
+      !contentUsage ||
+      !timeline ||
+      (timeline === "Specific date" && !deadline) ||
+      !shootLocation ||
+      !creativeDirection ||
+      !budgetRange ||
+      !projectSummary ||
+      !createdAt ||
+      !updatedAt
+    ) {
       return jsonResponse({
         ok: false,
-        error: "Missing required fields in section 1"
+        error: "Missing required fields"
       });
     }
 
     const sheet = getSheet();
-    const row = buildRow(data);
 
-    sheet.appendRow(row);
+    sheet.appendRow([
+      data.id || generateId(),
+      fullName,
+      company,
+      role,
+      email,
+      phone,
+      projectTypes,
+      projectGoal,
+      deliverables,
+      contentUsage,
+      timeline,
+      deadline,
+      shootLocation,
+      data.references || "",
+      creativeDirection,
+      budgetRange,
+      projectSummary,
+      createdAt || nowISO(),
+      updatedAt || nowISO()
+    ]);
 
     return jsonResponse({
       ok: true,
@@ -70,6 +127,7 @@ function doPost(e) {
     });
 
   } catch (err) {
+    console.error("ERROR:", err);
     return jsonResponse({
       ok: false,
       error: err.message || String(err)
@@ -78,60 +136,19 @@ function doPost(e) {
 }
 
 /***********************
- * CORE LOGIC
+ * CORE
  ***********************/
 function getSheet() {
-  const ss = SPREADSHEET_ID
-    ? SpreadsheetApp.openById(SPREADSHEET_ID)
-    : SpreadsheetApp.getActiveSpreadsheet();
-
-  if (!ss) {
-    throw new Error("Spreadsheet not found. Set SPREADSHEET_ID in code.gs.");
-  }
-
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   const sheet = ss.getSheetByName(SHEET_NAME);
 
   if (!sheet) {
     throw new Error(`Sheet "${SHEET_NAME}" not found`);
   }
-
   return sheet;
 }
 
-function buildRow(data) {
-  const createdAt = nowISO();
-
-  return [
-    generateId(),                     // id
-    data.full_name || "",              // full_name
-    data.company_name || "",           // company_name
-    data.role_title || "",             // role_title
-    data.email || "",                  // email
-    data.phone_whatsapp || "",         // phone_whatsapp
-    joinArray(data.project_types),     // project_types
-    data.project_goal || "",           // project_goal
-    data.deliverables || "",            // deliverables
-    joinArray(data.content_usage),     // content_usage
-    data.timeline || "",               // timeline
-    data.deadline || "",               // deadline
-    data.shoot_location || "",          // shoot_location
-    data.references || "",              // references
-    data.creative_direction || "",      // creative_direction
-    data.budget_range || "",            // budget_range
-    data.project_summary || "",         // project_summary
-    "new",                              // lead_status
-    "",                                 // lead_score
-    data.lead_source || "Website",      // lead_source
-    data.client_type || "",             // client_type
-    createdAt,                          // created_at
-    createdAt,                          // updated_at
-    data.form_version || "v1"           // form_version
-  ];
-}
-
 function joinArray(value) {
-  if (Array.isArray(value)) {
-    return value.join(", ");
-  }
+  if (Array.isArray(value)) return value.join(", ");
   return value || "";
 }

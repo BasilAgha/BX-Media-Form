@@ -1,8 +1,28 @@
 // 1) SET YOUR BACKEND ENDPOINT (Google Apps Script Web App URL)
-const BACKEND_ENDPOINT = "https://script.google.com/macros/s/AKfycbzTqASZLBRj9ofNJQEum5NstALONdse7yDlb_2QPNL7jwMm5rLtDUMu17dS7j9Dw0uk/exec";
+const BACKEND_ENDPOINT = "https://script.google.com/macros/s/AKfycbzDydm7oIqAxj7OTC8bz8cfS4gWcF3WTcPwtMZTDeutgIPYCAfBTLN2F1Q1tTjPC0cW/exec";
 
 const STORAGE_KEY = "bx_media_intake_v1";
-const FORM_VERSION = "v1";
+const ALLOWED_FIELDS = [
+  "id",
+  "full_name",
+  "company_name",
+  "role_title",
+  "email",
+  "phone_whatsapp",
+  "project_types",
+  "project_goal",
+  "deliverables",
+  "content_usage",
+  "timeline",
+  "deadline",
+  "shoot_location",
+  "references",
+  "creative_direction",
+  "budget_range",
+  "project_summary",
+  "created_at",
+  "updated_at"
+];
 
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("bxForm");
@@ -39,29 +59,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const random = Math.random().toString(36).slice(2, 8);
     return `proj_${Date.now()}_${random}`;
-  }
-
-  function normalizeLeadSource(value) {
-    if (!value) return "Website";
-    const lowered = value.toLowerCase();
-    if (lowered.includes("insta") || lowered === "ig") return "Instagram";
-    if (lowered.includes("refer")) return "Referral";
-    if (lowered.includes("web")) return "Website";
-    return "Website";
-  }
-
-  function detectLeadSource() {
-    const params = new URLSearchParams(window.location.search);
-    const manual = params.get("lead_source") || params.get("source") || params.get("utm_source");
-    if (manual) return normalizeLeadSource(manual);
-    const ref = document.referrer.toLowerCase();
-    if (ref.includes("instagram.com")) return "Instagram";
-    return "Website";
-  }
-
-  function detectClientType() {
-    const params = new URLSearchParams(window.location.search);
-    return params.get("client_type") || "";
   }
 
   function toggleInline(el, shouldShow) {
@@ -156,13 +153,8 @@ document.addEventListener("DOMContentLoaded", () => {
       creative_direction: form.querySelector("input[name=\"creative_direction\"]:checked")?.value || "",
       budget_range: form.querySelector("input[name=\"budget_range\"]:checked")?.value || "",
       project_summary: form.querySelector("#project_summary")?.value.trim() || "",
-      lead_status: "new",
-      lead_score: "",
-      lead_source: detectLeadSource(),
-      client_type: detectClientType(),
       created_at: now,
-      updated_at: now,
-      form_version: FORM_VERSION
+      updated_at: now
     };
   }
 
@@ -232,7 +224,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function validateStep(stepIndex) {
+  function validateStep(stepIndex, options = {}) {
     const stepEl = steps[stepIndex];
     if (!stepEl) return false;
 
@@ -242,8 +234,21 @@ document.addEventListener("DOMContentLoaded", () => {
     let firstInvalid = null;
     let anyFilled = false;
 
+    const isActiveInput = (input) => {
+      if (input.disabled) return false;
+      if (input.classList.contains("inline-other") && !input.classList.contains("is-visible")) {
+        return false;
+      }
+      const inlineExtra = input.closest(".inline-extra");
+      if (inlineExtra && !inlineExtra.classList.contains("is-visible")) {
+        return false;
+      }
+      return true;
+    };
+
     inputs.forEach((input) => {
       if (!input.name) return;
+      if (!isActiveInput(input)) return;
       names.add(input.name);
       if (input.type === "radio" || input.type === "checkbox") {
         if (input.checked) anyFilled = true;
@@ -253,12 +258,16 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     for (const name of names) {
-      const groupInputs = Array.from(stepEl.querySelectorAll(`input[name=\"${name}\"]`));
+      const groupInputs = Array.from(stepEl.querySelectorAll(`input[name=\"${name}\"]`))
+        .filter((input) => isActiveInput(input));
       const textInputs = groupInputs.filter((input) => input.type !== "radio" && input.type !== "checkbox");
       const hasChoiceInputs = groupInputs.some((input) => input.type === "radio" || input.type === "checkbox");
 
       if (textInputs.length > 0) {
         for (const input of textInputs) {
+          if (input.id === "references") {
+            continue;
+          }
           if (!input.value.trim()) {
             firstInvalid = input;
             const label = stepEl.querySelector(`label[for=\"${input.id}\"]`);
@@ -306,15 +315,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (firstInvalid) {
-      const baseMessage = anyFilled
-        ? `Please complete: ${missingLabels.join(", ") || "all required fields"}.`
-        : "Please fill all fields in this section.";
-      setStepHint(stepEl, true, baseMessage);
-      firstInvalid.focus();
+      if (!options.silent) {
+        const baseMessage = anyFilled
+          ? `Please complete: ${missingLabels.join(", ") || "all required fields"}.`
+          : "Please fill all fields in this section.";
+        setStepHint(stepEl, true, baseMessage);
+        firstInvalid.focus();
+      }
       return false;
     }
 
-    setStepHint(stepEl, false);
+    if (!options.silent) {
+      setStepHint(stepEl, false);
+    }
     return true;
   }
 
@@ -330,6 +343,9 @@ document.addEventListener("DOMContentLoaded", () => {
   form.addEventListener("input", () => {
     saveDraft();
     updateInlineFields();
+    if (validateStep(currentStep, { silent: true })) {
+      setStepHint(steps[currentStep], false);
+    }
   });
 
   if (prevBtn) {
@@ -380,37 +396,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const payload = buildPayload();
-    const orderedKeys = [
-      "id",
-      "full_name",
-      "company_name",
-      "role_title",
-      "email",
-      "phone_whatsapp",
-      "project_types",
-      "project_goal",
-      "deliverables",
-      "content_usage",
-      "timeline",
-      "deadline",
-      "shoot_location",
-      "references",
-      "creative_direction",
-      "budget_range",
-      "project_summary",
-      "lead_status",
-      "lead_score",
-      "lead_source",
-      "client_type",
-      "created_at",
-      "updated_at",
-      "form_version"
-    ];
+    const orderedKeys = [...ALLOWED_FIELDS];
 
     const formData = new FormData();
     orderedKeys.forEach((key) => {
       formData.append(key, payload[key] || "");
     });
+
+    const extraKeys = Object.keys(payload).filter((key) => !ALLOWED_FIELDS.includes(key));
+    if (extraKeys.length) {
+      console.warn("Extra payload keys detected:", extraKeys);
+    }
 
     setLoading(true);
 
